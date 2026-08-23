@@ -43,6 +43,62 @@ void setupDockAction(QDockWidget *dock)
 	QObject::connect(action, &QAction::enabledChanged, action, neverDisable);
 }
 
+void OBSBasic::ApplySimplifiedUI()
+{
+	/* Keep only Sources and Controls docks visible */
+	ui->scenesDock->setVisible(false);
+	ui->sourcesDock->setVisible(true);
+	ui->mixerDock->setVisible(false);
+	ui->transitionsDock->setVisible(false);
+	controlsDock->setVisible(true);
+	statsDock->setVisible(false);
+	statsDock->setFloating(true);
+
+	ui->scenesDock->toggleViewAction()->setVisible(false);
+	ui->mixerDock->toggleViewAction()->setVisible(false);
+	ui->transitionsDock->toggleViewAction()->setVisible(false);
+	statsDock->toggleViewAction()->setVisible(false);
+	ui->sourcesDock->toggleViewAction()->setVisible(false);
+	controlsDock->toggleViewAction()->setVisible(false);
+
+	for (int i = extraDocks.size() - 1; i >= 0; i--) {
+		extraDocks[i]->setVisible(false);
+		extraDocks[i]->toggleViewAction()->setVisible(false);
+	}
+	for (int i = extraCustomDocks.size() - 1; i >= 0; i--) {
+		extraCustomDocks[i]->setVisible(false);
+	}
+#ifdef BROWSER_AVAILABLE
+	for (int i = extraBrowserDocks.size() - 1; i >= 0; i--) {
+		extraBrowserDocks[i]->setVisible(false);
+		extraBrowserDocks[i]->toggleViewAction()->setVisible(false);
+	}
+#endif
+
+	/* Hide chrome that is not needed for the simplified UI */
+	ui->menubar->setVisible(false);
+	ui->statusbar->setVisible(false);
+	ui->contextContainer->setVisible(false);
+	ui->toggleStatusBar->setChecked(false);
+	ui->toggleContextBar->setChecked(false);
+
+	ui->menuBasic_MainMenu_Edit->menuAction()->setVisible(false);
+	ui->viewMenu->menuAction()->setVisible(false);
+	ui->menuDocks->menuAction()->setVisible(false);
+	ui->profileMenu->menuAction()->setVisible(false);
+	ui->sceneCollectionMenu->menuAction()->setVisible(false);
+	ui->menuTools->menuAction()->setVisible(false);
+
+	/* Prevent docks from being moved, floated, or closed */
+	ui->lockDocks->blockSignals(true);
+	ui->lockDocks->setChecked(true);
+	ui->lockDocks->blockSignals(false);
+	on_lockDocks_toggled(true);
+
+	ui->sourcesDock->setFeatures(QDockWidget::NoDockWidgetFeatures);
+	controlsDock->setFeatures(QDockWidget::NoDockWidgetFeatures);
+}
+
 void OBSBasic::on_resetDocks_triggered(bool force)
 {
 #ifdef BROWSER_AVAILABLE
@@ -78,26 +134,22 @@ void OBSBasic::on_resetDocks_triggered(bool force)
 	ui->sideDocks->setChecked(true);
 
 	int cx = width();
-	int bottomDocksHeight = height();
+	int bottomDocksHeight = height() * 225 / 1000;
+	int sideDockWidth = std::min(width() * 30 / 100, 280);
 
-	bottomDocksHeight = bottomDocksHeight * 225 / 1000;
-
-	ui->scenesDock->setVisible(true);
+	ui->scenesDock->setVisible(false);
 	ui->sourcesDock->setVisible(true);
-	ui->mixerDock->setVisible(true);
-	ui->transitionsDock->setVisible(true);
+	ui->mixerDock->setVisible(false);
+	ui->transitionsDock->setVisible(false);
 	controlsDock->setVisible(true);
 	statsDock->setVisible(false);
 	statsDock->setFloating(true);
 
-	QList<QDockWidget *> bottomDocks{ui->mixerDock, ui->transitionsDock, controlsDock};
+	resizeDocks({controlsDock}, {bottomDocksHeight}, Qt::Vertical);
+	resizeDocks({controlsDock}, {cx}, Qt::Horizontal);
+	resizeDocks({ui->sourcesDock}, {sideDockWidth}, Qt::Horizontal);
 
-	resizeDocks(bottomDocks, {bottomDocksHeight, bottomDocksHeight, bottomDocksHeight}, Qt::Vertical);
-	resizeDocks(bottomDocks, {cx * 45 / 100, cx * 14 / 100, cx * 16 / 100}, Qt::Horizontal);
-
-	int sideDockWidth = std::min(width() * 30 / 100, 280);
-	resizeDocks({ui->scenesDock, ui->sourcesDock}, {sideDockWidth, sideDockWidth}, Qt::Horizontal);
-
+	ApplySimplifiedUI();
 	activateWindow();
 }
 
@@ -155,6 +207,10 @@ void OBSBasic::AddDockWidget(QDockWidget *dock, Qt::DockWidgetArea area, bool ex
 	setupDockAction(dock);
 	dock->setFeatures(features);
 	addDockWidget(area, dock);
+
+	/* Simplified UI: keep plugin/browser docks hidden */
+	dock->setVisible(false);
+	dock->toggleViewAction()->setVisible(false);
 
 #ifdef BROWSER_AVAILABLE
 	if (extraBrowser && extraBrowserMenuDocksSeparator.isNull()) {
@@ -223,6 +279,9 @@ void OBSBasic::AddCustomDockWidget(QDockWidget *dock)
 
 	dock->setFeatures(features);
 	addDockWidget(Qt::RightDockWidgetArea, dock);
+
+	/* Simplified UI: keep custom docks hidden */
+	dock->setVisible(false);
 
 	extraCustomDockNames.push_back(dock->objectName());
 	extraCustomDocks.push_back(dock);

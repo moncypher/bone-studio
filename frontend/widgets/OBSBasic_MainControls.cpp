@@ -531,13 +531,14 @@ void OBSBasic::on_resetUI_triggered()
 	setPreviewScalingWindow();
 
 	ui->toggleListboxToolbars->setChecked(true);
-	ui->toggleContextBar->setChecked(true);
+	ui->toggleContextBar->setChecked(false);
 	ui->toggleSourceIcons->setChecked(true);
-	ui->toggleStatusBar->setChecked(true);
+	ui->toggleStatusBar->setChecked(false);
 	ui->scenes->SetGridMode(false);
 	ui->actionSceneListMode->setChecked(true);
 
 	config_set_bool(App()->GetUserConfig(), "BasicWindow", "gridMode", false);
+	ApplySimplifiedUI();
 }
 
 void OBSBasic::on_toggleListboxToolbars_toggled(bool visible)
@@ -706,7 +707,6 @@ void OBSBasic::on_OBSBasic_customContextMenuRequested(const QPoint &pos)
 		} else if (objName.compare("sourcesDock") == 0) {
 			ui->sources->customContextMenuRequested(globalPos);
 		}
-	} else if (!className) {
-		ui->menuDocks->exec(globalPos);
 	}
+	/* Empty-area dock menu disabled for simplified UI */
 }

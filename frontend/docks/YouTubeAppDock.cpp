@@ -147,12 +147,10 @@ void YouTubeAppDock::CreateBrowserWidget(const std::string &url)
 
 void YouTubeAppDock::SetVisibleYTAppDockInMenu(bool visible)
 {
-	if (visible && toggleViewAction()->isVisible()) {
-		return;
-	}
-
-	toggleViewAction()->setVisible(visible);
-	this->setVisible(visible);
+	/* Simplified UI: never show the YouTube dock */
+	(void)visible;
+	toggleViewAction()->setVisible(false);
+	this->setVisible(false);
 }
 
 // only 'ACCOUNT' mode supported

@@ -57,13 +57,14 @@ OBSBasicControls::OBSBasicControls(OBSBasic *main) : QFrame(nullptr), ui(new Ui:
 		forceStopStreamAction, &QAction::triggered, this,
 		[this]() { emit this->ForceStopStreamMenuActionClicked(); }, Qt::DirectConnection);
 
-	/* Set up default visibility */
+	/* Set up default visibility — simplified controls only */
 	ui->broadcastButton->setVisible(false);
 	ui->pauseRecordButton->setVisible(false);
 	ui->replayBufferButton->setVisible(false);
 	ui->saveReplayButton->setVisible(false);
 	ui->virtualCamButton->setVisible(false);
 	ui->virtualCamConfigButton->setVisible(false);
+	ui->modeSwitch->setVisible(false);
 
 	/* Set up state update connections */
 	connect(main, &OBSBasic::StreamingPreparing, this, &OBSBasicControls::StreamingPreparing);
@@ -263,23 +264,18 @@ void OBSBasicControls::UpdateStudioModeState(bool enabled)
 
 void OBSBasicControls::EnableBroadcastFlow(bool enabled)
 {
-	ui->broadcastButton->setVisible(enabled);
-	ui->broadcastButton->setEnabled(enabled);
-
-	ui->broadcastButton->setText(QTStr("Basic.Main.SetupBroadcast"));
-
-	ui->broadcastButton->setProperty("broadcastState", "idle");
-	ui->broadcastButton->style()->unpolish(ui->broadcastButton);
-	ui->broadcastButton->style()->polish(ui->broadcastButton);
+	(void)enabled;
+	ui->broadcastButton->setVisible(false);
 }
 
 void OBSBasicControls::EnableReplayBufferButtons(bool enabled)
 {
-	ui->replayBufferButton->setVisible(enabled);
+	(void)enabled;
+	ui->replayBufferButton->setVisible(false);
 }
 
 void OBSBasicControls::EnableVirtualCamButtons()
 {
-	ui->virtualCamButton->setVisible(true);
-	ui->virtualCamConfigButton->setVisible(true);
+	ui->virtualCamButton->setVisible(false);
+	ui->virtualCamConfigButton->setVisible(false);
 }

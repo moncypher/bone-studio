@@ -459,6 +459,9 @@ public:
 	void AddCustomDockWidget(QDockWidget *dock);
 	void setDockCornersVertical(bool vertical);
 
+private:
+	void ApplySimplifiedUI();
+
 private slots:
 	void on_resetDocks_triggered(bool force = false);
 	void on_lockDocks_toggled(bool lock);

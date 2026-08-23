@@ -352,16 +352,17 @@ OBSBasic::OBSBasic(QWidget *parent) : OBSMainWindow(parent), undo_s(ui), ui(new 
 	connect(ui->transitionDuration, &QSpinBox::valueChanged, this,
 		[this](int value) { SetTransitionDuration(value); });
 
-	/* Main window default layout */
+	/* Main window default layout: Sources on left, Controls on bottom */
 	setDockCornersVertical(true);
 
-	/* Scenes and Sources dock on left
-	 * This specific arrangement can't be set up in Qt Designer */
-	addDockWidget(Qt::LeftDockWidgetArea, ui->scenesDock);
-	splitDockWidget(ui->scenesDock, ui->sourcesDock, Qt::Vertical);
+	addDockWidget(Qt::LeftDockWidgetArea, ui->sourcesDock);
 	int sideDockWidth = std::min(width() * 30 / 100, 320);
-	resizeDocks({ui->scenesDock, ui->sourcesDock}, {sideDockWidth, sideDockWidth}, Qt::Horizontal);
+	resizeDocks({ui->sourcesDock}, {sideDockWidth}, Qt::Horizontal);
 	addDockWidget(Qt::BottomDockWidgetArea, controlsDock);
+
+	/* Register remaining docks so they exist, but keep them hidden */
+	addDockWidget(Qt::LeftDockWidgetArea, ui->scenesDock);
+	ui->scenesDock->setVisible(false);
 
 	startingDockLayout = saveState();
 
@@ -1102,13 +1103,13 @@ void OBSBasic::OBSInit()
 	} while (false)
 
 	SET_VISIBILITY("ShowListboxToolbars", toggleListboxToolbars);
-	SET_VISIBILITY("ShowStatusBar", toggleStatusBar);
+	ui->toggleStatusBar->setChecked(false);
 #undef SET_VISIBILITY
 
 	bool sourceIconsVisible = config_get_bool(App()->GetUserConfig(), "BasicWindow", "ShowSourceIcons");
 	ui->toggleSourceIcons->setChecked(sourceIconsVisible);
 
-	bool contextVisible = config_get_bool(App()->GetUserConfig(), "BasicWindow", "ShowContextToolbars");
+	bool contextVisible = false;
 	ui->toggleContextBar->setChecked(contextVisible);
 	ui->contextContainer->setVisible(contextVisible);
 	if (contextVisible) {
@@ -1275,6 +1276,8 @@ void OBSBasic::OBSInit()
 	bool sideDocks = config_get_bool(App()->GetUserConfig(), "BasicWindow", "SideDocks");
 	ui->sideDocks->setChecked(sideDocks);
 	setDockCornersVertical(sideDocks);
+
+	ApplySimplifiedUI();
 
 	SystemTray(true);
 
